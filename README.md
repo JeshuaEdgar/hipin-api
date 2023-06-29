@@ -8,6 +8,6 @@ It's a simple script/container that will download the latest HIPIN version every
 
 Download the repo as a .zip file and run ```docker build -t hipin-api .``` to create the image
 
-To run the image just run ```docker run hipin-api -p 127.0.0.1:8080:8080/tcp```
+To run the image just run ```docker run -p 8080:8080 hipin-api```
 
 Port 8080 is the chosen port, if you want to run it on another port just change the first ```8080``` in the command above.
