@@ -1,0 +1,5 @@
+flask
+pefile
+requests
+schedule
+waitress
