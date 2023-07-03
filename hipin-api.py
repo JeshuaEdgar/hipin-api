@@ -8,7 +8,7 @@ DOWNLOADURL = "https://download.voipit.nl/HIPIN/HIPIN.exe"
 FILENAME = "HIPIN.exe"
 CACHEFILE = "cache"
 CACHEKEY = "cached_api"
-EXPIRATION_TIME = 3600
+EXPIRATION_TIME = 86400 #24 hours cache
 
 app = Flask(__name__)
 
