@@ -2,7 +2,7 @@ import pefile, requests, os, time, threading, logging, shelve
 from datetime import datetime
 from flask import Flask
 from waitress import serve
-from schedule import every, repeat, run_pending
+import schedule
 
 DOWNLOADURL = "https://download.voipit.nl/HIPIN/HIPIN.exe"
 FILENAME = "HIPIN.exe"
@@ -30,11 +30,9 @@ def get_cached_json():
                 return data
     return None
 
-
 def cache_json(data):
     with shelve.open(CACHEFILE) as cache:
         cache[CACHEKEY] = {'timestamp': time.time(), 'data': data}
-
 
 ## get product version, use cache when possible
 def get_product_version(file_path):
@@ -57,7 +55,6 @@ def get_product_version(file_path):
     return None
 
 ## file handler, clean and (re)download
-@repeat(every(24).hours.at("23:30"))
 def handle_file(path):
     print(string_time() + " | Cleaning files...")
     if os.path.exists(path):
@@ -69,17 +66,24 @@ def handle_file(path):
         file.write(response.content)
     print(string_time() + " | Downloaded!")
 
-## handle the multithreading
-def schedule_handler():
-    while True:
-        run_pending()
-        time.sleep(10)
+schedule.every(12).hours.do(handle_file, path=FILENAME)
 
-threading_job = threading.Thread(target=schedule_handler)
-threading_job.start()
+def server_handler():
+    serve(app, host="0.0.0.0", port=8080)
 
 if __name__ == "__main__":
+    # download / cleanup files
     handle_file(FILENAME)
+
+    # set logging
     logger = logging.getLogger('waitress')
     logger.setLevel(logging.INFO)
-    serve(app, host="0.0.0.0", port=8080)
+
+    # start webserver as a thread
+    threading_job = threading.Thread(target=server_handler)
+    threading_job.start()
+
+    # run scheduled task
+    while True:
+        schedule.run_pending()
+        time.sleep(60)
